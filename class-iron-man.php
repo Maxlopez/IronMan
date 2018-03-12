@@ -1,4 +1,4 @@
-<?php namespace MasterPopups\Includes;
+<?php namespace MaxLopez\HTTPClientWP;
 
 /*
 |---------------------------------------------------------------------------------------------------
@@ -59,7 +59,7 @@ class IronMan {
 	 */
 	public $options = array(
 		'encode_body' => false,
-		'timeout'     => 5,
+		'timeout'     => 10,
     'redirection' => 5,
     'httpversion' => '1.0',
     'useragent'   => '',
@@ -111,13 +111,6 @@ class IronMan {
 
 	/**
 	 *
-	 * Check if response has WP_Error
-	 * @var boolean
-	 */
-	public $has_error = false;
-
-	/**
-	 *
 	 * Response message
 	 * @var string
 	 */
@@ -125,10 +118,17 @@ class IronMan {
 
 	/**
 	 *
-	 * Response error message
+	 * Check if response has WP_Error
+	 * @var boolean
+	 */
+	public $has_error = false;
+
+	/**
+	 *
+	 * Response error
 	 * @var string
 	 */
-	public $error_message = '';
+	public $error = '';
 
 	/**
 	 *
@@ -193,6 +193,15 @@ class IronMan {
 		if( $key == 'useragent' ){
 			$this->options['user-agent'] = $value;
 		}
+	}
+
+	/*
+	|-----------------------------------------------------------------------------------
+	| Get error message
+	|-----------------------------------------------------------------------------------
+	*/
+	public function get_error_message(){
+		return $this->has_error && $this->error != '' ? $this->error : $this->message;
 	}
 
 	/*
@@ -261,8 +270,6 @@ class IronMan {
 		$this->set_headers( $headers );
 		$this->set_body( $body );
 		$this->make_url( $url );
-
-		d('URL final',$this->url);
 
     switch( $this->method ){
     	case 'GET':
@@ -382,7 +389,7 @@ class IronMan {
 		$this->response_body = '';
 		$this->has_error = false;
 		$this->errors = array();
-		$this->error_message = '';
+		$this->error = '';
 	}
 
 	/*
@@ -395,7 +402,7 @@ class IronMan {
 		if( is_wp_error( $this->response ) ) {
 			$this->has_error = true;
 			$this->errors = $this->response->get_error_messages();
-			$this->error_message = $this->response->get_error_message();
+			$this->error = $this->response->get_error_message();
 		} else {
 			$this->response_code = wp_remote_retrieve_response_code( $this->response );
 			$this->message = wp_remote_retrieve_response_message( $this->response );
@@ -411,7 +418,7 @@ class IronMan {
 
 	/*
 	|-----------------------------------------------------------------------------------
-	| Get array
+	| Get array body
 	|-----------------------------------------------------------------------------------
 	*/
 	private function get_array_body( $body ){
